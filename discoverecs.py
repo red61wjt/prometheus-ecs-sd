@@ -362,6 +362,9 @@ class Main:
             jobs[i] = []
         log('Targets: ' + str(len(targets)))
         for target in targets:
+            scheme = "http"
+            if(target.port.endswith('443')):
+                scheme = "https"
             path_interval = extract_path_interval(target.metrics_path)
             for path, interval in path_interval.items():
                 labels = False
@@ -384,7 +387,8 @@ class Main:
                     'labels' : {
                         'instance': target.p_instance,
                         'job' : target.ecs_task_name,
-                        'metrics_path' : path
+                        'metrics_path' : path,
+                        '__scheme__': scheme
                     }
                 }
                 if labels:
