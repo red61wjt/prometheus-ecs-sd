@@ -285,9 +285,12 @@ def task_info_to_targets(task_info):
         metrics_path = get_environment_var(container_definition['environment'], 'PROMETHEUS_ENDPOINT')
         nolabels = get_environment_var(container_definition['environment'], 'PROMETHEUS_NOLABELS')
         prom_port = get_environment_var(container_definition['environment'], 'PROMETHEUS_PORT')
+        isCore = task_info.task_definition['family'].startswith("core")
+        if isCore:
+            prom_port = "9990"
         if nolabels != 'true': nolabels = None
         containers = filter(lambda c:c['name'] == container_definition['name'], task_info.task['containers'])
-        if prometheus:
+        if ( prometheus or isCore ):
             for container in containers:
                 ecs_task_name=extract_name(task_info.task['taskDefinitionArn'])
                 has_host_port_mapping = 'portMappings' in container_definition and len(container_definition['portMappings']) > 0
