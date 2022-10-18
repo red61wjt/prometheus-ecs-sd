@@ -278,8 +278,9 @@ def extract_path_interval(env_variable):
     return path_interval
 
 def task_info_to_targets(task_info):
+    targets = []
     if not task_info.valid():
-        return []
+        return targets
     for container_definition in task_info.task_definition['containerDefinitions']:
         prometheus = get_environment_var(container_definition['environment'], 'PROMETHEUS')
         metrics_path = get_environment_var(container_definition['environment'], 'PROMETHEUS_ENDPOINT')
@@ -320,7 +321,7 @@ def task_info_to_targets(task_info):
                         ec2_instance_id=task_info.container_instance['ec2InstanceId']
                         ecs_container_id=extract_name(container['containerArn'])
 
-                return [Target(
+                targets.append(Target(
                     ip=interface_ip,
                     port=first_port,
                     metrics_path=metrics_path,
@@ -330,8 +331,8 @@ def task_info_to_targets(task_info):
                     ecs_task_version=ecs_task_version,
                     ecs_container_id=ecs_container_id,
                     ecs_cluster_name=ecs_cluster_name,
-                    ec2_instance_id=ec2_instance_id)]
-    return []
+                    ec2_instance_id=ec2_instance_id))
+    return targets
 
 class Main:
 
