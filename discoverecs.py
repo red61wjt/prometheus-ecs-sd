@@ -255,8 +255,8 @@ def get_environment_var(environment, name):
             return entry['value']
     return None
 
-def extract_task_id(arn):
-    return arn.split(":")[5].split('/')[2]
+def extract_arn_id(arn, index):
+    return arn.split(":")[5].split('/')[index]
 
 def extract_name(arn):
     return arn.split(":")[5].split('/')[1]
@@ -314,14 +314,14 @@ def task_info_to_targets(task_info):
                     ecs_task_id = ecs_task_version = ecs_container_id = ecs_cluster_name = ec2_instance_id = None
                 else:
                     p_instance = interface_ip + ':' + first_port
-                    ecs_task_id=extract_task_id(task_info.task['taskArn'])
+                    ecs_task_id=extract_arn_id(task_info.task['taskArn'], 2)
                     ecs_task_version=extract_task_version(task_info.task['taskDefinitionArn'])
                     ecs_cluster_name=extract_name(task_info.task['clusterArn'])
                     if 'FARGATE' in task_info.task_definition.get('requiresCompatibilities', ''):
                         ec2_instance_id = ecs_container_id = None
                     else:
                         ec2_instance_id=task_info.container_instance['ec2InstanceId']
-                        ecs_container_id=extract_name(container['containerArn'])
+                        ecs_container_id=extract_arn_id(container['containerArn'], 2)
 
                 return [Target(
                     ip=interface_ip,
