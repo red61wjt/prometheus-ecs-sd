@@ -237,7 +237,7 @@ class Target:
 
     def __init__(self, ip, port, metrics_path,
                  p_instance, ecs_task_id, ecs_task_name, ecs_task_version,
-                 ecs_container_id, ecs_cluster_name, ec2_instance_id):
+                 ecs_container_id, ecs_container_name, ecs_cluster_name, ec2_instance_id):
         self.ip = ip
         self.port = port
         self.metrics_path = metrics_path
@@ -246,6 +246,7 @@ class Target:
         self.ecs_task_name = ecs_task_name
         self.ecs_task_version = ecs_task_version
         self.ecs_container_id = ecs_container_id
+        self.container_name = ecs_container_name
         self.ecs_cluster_name = ecs_cluster_name
         self.ec2_instance_id = ec2_instance_id
 
@@ -312,12 +313,13 @@ def task_info_to_targets(task_info):
 
                 if nolabels:
                     p_instance = ecs_task_name
-                    ecs_task_id = ecs_task_version = ecs_container_id = ecs_cluster_name = ec2_instance_id = None
+                    ecs_task_id = ecs_task_version = ecs_container_id = ecs_container_name = ecs_cluster_name = ec2_instance_id = None
                 else:
                     p_instance = interface_ip + ':' + first_port
                     ecs_task_id=extract_arn_id(task_info.task['taskArn'], 2)
                     ecs_task_version=extract_task_version(task_info.task['taskDefinitionArn'])
                     ecs_cluster_name=extract_name(task_info.task['clusterArn'])
+                    ecs_container_name=container['name']
                     if 'FARGATE' in task_info.task_definition.get('requiresCompatibilities', ''):
                         ec2_instance_id = ecs_container_id = None
                     else:
@@ -333,6 +335,7 @@ def task_info_to_targets(task_info):
                     ecs_task_name=ecs_task_name,
                     ecs_task_version=ecs_task_version,
                     ecs_container_id=ecs_container_id,
+                    ecs_container_name=ecs_container_name,
                     ecs_cluster_name=ecs_cluster_name,
                     ec2_instance_id=ec2_instance_id))
     return targets
@@ -392,7 +395,8 @@ class Main:
                         'instance': target.p_instance,
                         'job' : target.ecs_task_name,
                         'metrics_path' : path,
-                        '__scheme__': scheme
+                        '__scheme__': scheme,
+                        'ecs_container_name': target.container_name
                     }
                 }
                 if labels:
